@@ -334,25 +334,36 @@ public:
     }
 
     bool OnGossipSelectCode(Player* pPlayer, Creature* /*pCreature*/, uint32 uiSender, uint32 uiAction, const char* code)
+{
+    ClearGossipMenuFor(pPlayer);
+
+    if (uiSender == GOSSIP_SENDER_MAIN)
     {
-        ClearGossipMenuFor(pPlayer);
-
-        if (uiSender == GOSSIP_SENDER_MAIN)
+        if (islower(code[0]))
         {
-            if (islower(code[0]))
-            {
-                toupper(code[0]);
-            }
+            code[0] = toupper(code[0]); // store the result of toupper() back in code[0]
+        }
 
-            if (passChecks(pPlayer, code))
+        if (passChecks(pPlayer, code))
+        {
+            Player* pBounty = ObjectAccessor::FindPlayerByName(code);
+            switch (uiAction)
             {
-                Player* pBounty = ObjectAccessor::FindPlayerByName(code);
-                switch (uiAction)
+                case GOSSIP_ACTION_INFO_DEF + 5:
                 {
-                    case GOSSIP_ACTION_INFO_DEF + 5:
+                    if (hasCurrency(pPlayer, BOUNTY_PRICE_1, SET_CURRENCY))
                     {
-                        if (hasCurrency(pPlayer, BOUNTY_PRICE_1, SET_CURRENCY))
-                        {
+                        // rest of the code
+                    }
+                    break;
+                }
+                // other cases
+            }
+        }
+    }
+
+    return true;
+}
     #if SET_CURRENCY != 2
                             CharacterDatabase.Execute("INSERT INTO bounties VALUES('{}','20', '1')", pBounty->GetGUID().GetRawValue());
     #else
